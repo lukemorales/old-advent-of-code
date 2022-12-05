@@ -12,5 +12,8 @@ const [a, b, fa, fb] = [
   functionalProgramB,
 ].map((fn) => fn(input));
 
-console.log({ A: a, B: b });
-console.log({ equalA: a === fa, equalB: b === fb });
+console.log(
+  `${path.basename(__dirname)} => Part A: ${a} (${a === fa}) | Part B: ${b} (${
+    b === fb
+  })`
+);
