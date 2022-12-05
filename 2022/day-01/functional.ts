@@ -74,19 +74,12 @@ export const functionalProgramB = (input: string) => {
           O.fromPredicate((value) => value > topRanked)
         )
       ),
-      O.flatMap((value) =>
+      O.map((value) =>
         F.pipe(
           lookup.topRankingCalories,
-          NEA.modifyAt(0, () => value),
-          O.map(
-            F.flow(
-              A.sort(N.Ord),
-              F.unsafeCoerce<
-                readonly number[],
-                typeof lookup["topRankingCalories"]
-              >
-            )
-          )
+          NEA.modifyHead(() => value),
+          A.sort(N.Ord),
+          F.unsafeCoerce<readonly number[], typeof lookup["topRankingCalories"]>
         )
       ),
       O.getOrElse(() => lookup.topRankingCalories)
