@@ -14,9 +14,8 @@ const [a, b, fa, fb] = [
   functionalProgramB,
 ].map((fn) => fn(INPUT));
 
-// @ts-expect-error
-assert.deepStrictEqual(programA(SAMPLE), X);
-// assert.deepStrictEqual(programB(SAMPLE), Y);
+assert.deepStrictEqual(programA(SAMPLE), "CMZ");
+assert.deepStrictEqual(programB(SAMPLE), "MCD");
 
 console.log(
   `${path.basename(__dirname)} => Part A: ${a} (${a === fa}) | Part B: ${b} (${
