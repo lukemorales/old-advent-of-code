@@ -1,7 +1,8 @@
 import assert from "assert";
+import { parseChallengeInput } from "../../utils/parse-challenge-input";
 
 export const programA = (input: string) => {
-  const values = input.split("\n");
+  const values = parseChallengeInput(input);
 
   const lookup = {
     currentCalories: 0,
@@ -41,7 +42,7 @@ export const programA = (input: string) => {
 };
 
 export const programB = (input: string) => {
-  const values = input.split("\n");
+  const values = parseChallengeInput(input);
 
   const lookup = {
     currentCalories: 0,

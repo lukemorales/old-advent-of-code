@@ -7,9 +7,10 @@ import {
   boolean as B,
   function as F,
 } from "fp-ts";
+import { parseChallengeInput } from "../../utils/parse-challenge-input";
 
 export const functionalProgramA = (input: string) => {
-  const values = F.pipe(input, S.split("\n"));
+  const values = F.pipe(input, parseChallengeInput);
 
   const lookup = {
     currentCalories: 0,
@@ -56,7 +57,7 @@ export const functionalProgramA = (input: string) => {
 };
 
 export const functionalProgramB = (input: string) => {
-  const values = F.pipe(input, S.split("\n"));
+  const values = F.pipe(input, parseChallengeInput);
 
   const lookup = {
     currentCalories: 0,
