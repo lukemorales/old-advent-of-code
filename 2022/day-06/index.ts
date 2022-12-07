@@ -1,6 +1,7 @@
 import assert from "assert";
 import * as fs from "fs";
 import path from "path";
+import { parseChallengeInput } from "../../utils/parse-challenge-input";
 import { functionalProgramA, functionalProgramB } from "./functional";
 import { programA, programB } from "./standard";
 
@@ -14,9 +15,10 @@ const [a, b, fa, fb] = [
   functionalProgramB,
 ].map((fn) => fn(INPUT));
 
-// @ts-expect-error
-assert.deepStrictEqual(programA(SAMPLE), X);
-// assert.deepStrictEqual(programB(SAMPLE), Y);
+parseChallengeInput(SAMPLE).forEach((sampleInput, sampleLine) => {
+  assert.deepStrictEqual(programA(sampleInput), [7, 5, 6, 10, 11][sampleLine]);
+  assert.deepStrictEqual(programB(sampleInput), [19, 23, 23, 29, 26][sampleLine]);
+});
 
 console.log(
   `${path.basename(__dirname)} => Part A: ${a} (${a === fa}) | Part B: ${b} (${
