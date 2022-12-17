@@ -4,113 +4,69 @@ import {
   number as N,
   readonlyArray as A,
   readonlyNonEmptyArray as NEA,
-  boolean as B,
   function as F,
 } from "fp-ts";
-import { parseChallengeInput } from "../../utils/parse-challenge-input";
+
+const parseGroupAndSumValues = F.flow(
+  S.split("\n"),
+  A.reduce(0, (total, current) => total + F.pipe(current, S.trim, Number))
+);
 
 export const functionalProgramA = (input: string) => {
-  const values = F.pipe(input, parseChallengeInput);
+  const groups = F.pipe(input, S.split("\n\n"));
 
-  const lookup = {
-    currentCalories: 0,
-    highestCalories: 0,
-  };
+  const results = F.pipe(groups, A.map(parseGroupAndSumValues));
 
-  for (const index in values) {
-    const currentCalories = F.pipe(
-      values,
-      A.lookup(parseInt(index)),
-      O.map(F.flow(S.trim, parseInt)),
-      O.flatMap(O.fromPredicate(N.isNumber)),
-      O.map(N.MonoidSum.combine(lookup.currentCalories)),
-      O.toUndefined
-    );
-
-    if (!currentCalories) {
-      lookup.highestCalories = F.pipe(
-        lookup.highestCalories >= lookup.currentCalories,
-        B.match(
-          () => lookup.currentCalories,
-          () => lookup.highestCalories
-        )
-      );
-
-      lookup.currentCalories = 0;
-      continue;
-    }
-
-    if (A.isOutOfBound(parseInt(index), values)) {
-      lookup.highestCalories = F.pipe(
-        lookup.highestCalories >= currentCalories,
-        B.match(
-          () => currentCalories,
-          () => lookup.highestCalories
-        )
-      );
-    }
-
-    lookup.currentCalories = currentCalories;
-  }
-
-  return lookup.highestCalories;
+  return Math.max(...results);
 };
 
 export const functionalProgramB = (input: string) => {
-  const values = F.pipe(input, parseChallengeInput);
+  const groups = F.pipe(input, S.split("\n\n"));
 
-  const lookup = {
-    currentCalories: 0,
-    topRankingCalories: [0, 0, 0] as readonly [number, number, number],
-  };
+  type $CaloriesPodium = readonly [number, number, number];
 
-  const updateCaloriesRanking = (candidate: number) =>
-    F.pipe(
-      lookup.topRankingCalories,
-      A.head,
-      O.flatMap((topRanked) =>
+  const getTopRankedCalories = (podium: $CaloriesPodium = [0, 0, 0]) => {
+    return (calories: readonly string[]): $CaloriesPodium => {
+      const currentCalories = F.pipe(
+        calories,
+        A.head,
+        O.map(parseGroupAndSumValues)
+      );
+
+      const updateCaloriesPodium = (value: number) =>
         F.pipe(
-          candidate,
-          O.fromPredicate((value) => value > topRanked)
-        )
-      ),
-      O.map((value) =>
-        F.pipe(
-          lookup.topRankingCalories,
+          podium,
           NEA.modifyHead(() => value),
           A.sort(N.Ord),
-          F.unsafeCoerce<readonly number[], typeof lookup["topRankingCalories"]>
-        )
-      ),
-      O.getOrElse(() => lookup.topRankingCalories)
-    );
+          F.unsafeCoerce<readonly number[], $CaloriesPodium>
+        );
 
-  for (const index in values) {
-    const currentCalories = F.pipe(
-      values,
-      A.lookup(parseInt(index)),
-      O.map(F.flow(S.trim, parseInt)),
-      O.flatMap(O.fromPredicate(N.isNumber)),
-      O.map(N.MonoidSum.combine(lookup.currentCalories)),
-      O.toUndefined
-    );
+      const updatedPodium = F.pipe(
+        O.Do,
+        O.bind("topRanked", () => F.pipe(podium, A.head)),
+        O.bind("candidate", () => currentCalories),
+        O.flatMap(({ topRanked, candidate }) =>
+          F.pipe(
+            candidate,
+            O.fromPredicate((value) => value > topRanked)
+          )
+        ),
+        O.map(updateCaloriesPodium),
+        O.getOrElse(() => podium)
+      );
 
-    if (!currentCalories) {
-      lookup.topRankingCalories = updateCaloriesRanking(lookup.currentCalories);
-      lookup.currentCalories = 0;
+      return F.pipe(
+        calories,
+        A.tail,
+        O.match(() => updatedPodium, getTopRankedCalories(updatedPodium))
+      );
+    };
+  };
 
-      continue;
-    }
-
-    if (A.isOutOfBound(parseInt(index), values)) {
-      lookup.topRankingCalories = updateCaloriesRanking(currentCalories);
-    }
-
-    lookup.currentCalories = currentCalories;
-  }
+  const topRankedCalories = F.pipe(groups, getTopRankedCalories());
 
   return F.pipe(
-    lookup.topRankingCalories,
+    topRankedCalories,
     A.reduce(0, (total, current) => (total += current))
   );
 };
